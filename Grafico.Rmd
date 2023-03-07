@@ -1,0 +1,93 @@
+---
+title: "Gráfico Covid"
+author: "Grupo I"
+date: "2023-03-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(scales)
+library(readr)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+
+#Cargamos los datos
+data_covid <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv", 
+    col_types = cols(date = col_date(format = "%Y-%m-%d")))
+
+#Eliminamos valores perdidos
+data_covid <- data_covid[!is.na(data_covid$new_deaths_smoothed_per_million),]
+
+```
+
+```{r}
+
+location <-
+  c(
+    "United States",
+    "Italy",
+    "France",
+    "Germany",
+    "Canada",
+    "Japan",
+    "United Kingdom",
+    "Spain"
+  )
+
+#Creamos un data frame solo con los paises que nos interesan
+df <- data_covid[data_covid$location %in% location, ]
+
+#Representamos el gráfico
+grafico <- ggplot(df) +
+  geom_line(aes(
+    x = date,
+    y = new_deaths_smoothed_per_million,
+    size = location,
+    color = location
+  )) +
+  scale_size_manual(
+    values = c(
+      "Spain" = 1.25,
+      "Italy" = 0.5,
+      "France" = 0.5,
+      "Germany" = 0.5,
+      "United States" = 0.5,
+      "Canada" = 0.5,
+      "Japan" = 0.5,
+      "United Kingdom" = 0.5
+    ),
+    guide = "none"
+  ) +
+  scale_color_manual(
+    name = "Localización",
+    values = c(
+      "Spain" = "black",
+      "Canada" = "brown",
+      "United States" = "purple",
+      "France" = "orange",
+      "United States" = "purple",
+      "Germany" = "darkgreen",
+      "Italy" = "steelblue1",
+      "Japan" = "blue",
+      "United Kingdom" = "#FF1493"
+    )
+  ) + ggtitle("Daily new confirmed COVID-19 deaths per million people",
+              subtitle = "7-day rolling average. For some countries the number of confirmed deaths is much lower than the \n true number of deaths. This is because of limited testing and challenges in the attribution of the \n cause of death.") + theme_classic() + scale_y_continuous(expand = expansion(add = c(0, 0)),
+                                                                                                                                                                                                                                                                                            limits = c(0, NA),
+ oob = rescale_none) + expand_limits(y = 0)
+
+
+
+
+grafico
+ggplotly(grafico)
+
+
+```
